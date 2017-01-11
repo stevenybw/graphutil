@@ -1,3 +1,4 @@
+import copy
 """ Graph For Python"""
 class Graph:
     def __init__(self):
@@ -10,6 +11,14 @@ class Graph:
         self._connect_inv_ordered = dict()
         
         self._attribute = dict()
+
+    def transpose(self):
+        transposed_g = Graph()
+        for v in self._V:
+            for u in self.in_nodes(v):
+                transposed_g.connect(v, u)
+        transposed_g._attribute = copy.deepcopy(self._attribute)
+        return transposed_g
 
     def in_nodes(self, node_id: int) -> set:
         return self._connect_inv[node_id]
@@ -88,7 +97,7 @@ class Graph:
         self.dfs(on_finish=on_finish)
         return list(reversed(result))
 
-    def dfs(self, on_visit=None, on_back_edge=None, on_finish=None):
+    def dfs(self, vertex_sequence=None, on_main_visit=None, on_visit=None, on_back_edge=None, on_finish=None):
         WHITE = 0
         GRAY  = 1
         BLACK = 2
@@ -112,8 +121,11 @@ class Graph:
                     if on_back_edge:
                         on_back_edge()
 
-        for v in self._V:
+        vertex_sequence = vertex_sequence or list(self._V)
+        for v in vertex_sequence:
             if state[v] == WHITE:
+                if on_main_visit:
+                    on_main_visit(v)
                 state[v] = GRAY
                 dfs_helper(v)
                 state[v] = BLACK
@@ -121,6 +133,27 @@ class Graph:
                     on_finish(v)
             assert(state[v] != GRAY)
 
+    def scc(self):
+        finish_time = dict()
+
+        def on_finish(v):
+            l = len(finish_time)
+            finish_time[v] = l
+        self.dfs(on_finish=on_finish)
+        vertex_sequence = sorted(finish_time.keys(), key=lambda v: finish_time[v], reverse=True)
+
+        scc_list = list()
+
+        def on_main_visit(v):
+            scc_list.append(list())
+
+        def on_visit(v):
+            scc_list[-1].append(v)
+
+        transposed_g = self.transpose()
+        transposed_g.dfs(vertex_sequence=vertex_sequence, on_main_visit=on_main_visit, on_visit=on_visit)
+
+        return scc_list
 
     def write_to_dot(self, path, index_name_map=None):
         with open(path, "w") as fp:
