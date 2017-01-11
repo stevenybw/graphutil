@@ -12,13 +12,28 @@ class Graph:
         
         self._attribute = dict()
 
-    def transpose(self):
+    def transpose(self) -> 'Graph':
         transposed_g = Graph()
         for v in self._V:
             for u in self.in_nodes(v):
                 transposed_g.connect(v, u)
         transposed_g._attribute = copy.deepcopy(self._attribute)
         return transposed_g
+
+    def sub_graph(self, vertexes) -> 'Graph':
+        sub_g = Graph()
+        sub_vertex = set(vertexes)
+        for v in sub_vertex:
+            if v not in self._V:
+                raise RuntimeError("vertex " + str(v) + " does not exist in the graph")
+            for u in self.in_nodes(v):
+                if u in sub_vertex:
+                    sub_g.connect(u, v)
+            sub_g._attribute[v] = copy.deepcopy(self._attribute[v])
+        return sub_g
+
+    def nodes(self) -> set:
+        return set(self._V)
 
     def in_nodes(self, node_id: int) -> set:
         return self._connect_inv[node_id]

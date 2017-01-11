@@ -91,6 +91,29 @@ class TestGraph(unittest.TestCase):
         for scc in scc_list:
             self.assertIn(tuple(sorted(scc)), correct_scc)
 
+    def test_sub_graph(self):
+        g = Graph()
+        g.connect(1, 2)
+        g.connect(2, 1)
+        g.connect(1, 3)
+        g.connect(3, 1)
+        g.connect(3, 4)
+        g.connect(4, 3)
+
+        g.connect(5, 6)
+        g.connect(6, 5)
+        g.connect(6, 7)
+        g.connect(7, 6)
+
+        scc_list = g.scc()
+        for scc in scc_list:
+            sub_g = g.sub_graph(scc)
+            self.assertEqual(sub_g.nodes(), set(scc))
+            for v in sub_g.nodes():
+                for u in sub_g.in_nodes(v):
+                    self.assertIn(u, g.in_nodes(v))
+        print("SCC Passed")
+
 
 if __name__ == 'main':
     unittest.main()
