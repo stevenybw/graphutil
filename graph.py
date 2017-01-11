@@ -4,6 +4,11 @@ class Graph:
         self._V = set()
         self._connect = dict()
         self._connect_inv = dict()
+
+        # Add order is preserved
+        self._connect_ordered = dict()
+        self._connect_inv_ordered = dict()
+        
         self._attribute = dict()
 
     def in_nodes(self, node_id: int) -> set:
@@ -20,6 +25,8 @@ class Graph:
             self._V.add(u)
             self._connect[u] = set()
             self._connect_inv[u] = set()
+            self._connect_ordered[u] = list()
+            self._connect_inv_ordered[u] = list()
             val = dict()
             val['in_degree'] = 0
             val['out_degree'] = 0
@@ -40,6 +47,8 @@ class Graph:
 
         del self._connect[node_id]
         del self._connect_inv[node_id]
+        del self._connect_ordered[node_id]
+        del self._connect_inv_ordered[node_id]
         del self._attribute[node_id]
         self._V.remove(node_id)
 
@@ -49,6 +58,8 @@ class Graph:
         if v not in self._connect[u]:
             self._connect[u].add(v)
             self._connect_inv[v].add(u)
+            self._connect_ordered[u].append(v)
+            self._connect_inv_ordered[v].append(u)
             self._attribute[u]['out_degree'] += 1
             self._attribute[v]['in_degree'] += 1
 
