@@ -114,6 +114,32 @@ class TestGraph(unittest.TestCase):
                     self.assertIn(u, g.in_nodes(v))
         print("SCC Passed")
 
+    def test_preserve_order(self):
+        g = Graph()
+        g.connect(4, 3)
+        g.connect(1, 3)
+        g.connect(2, 3)
+        self.assertListEqual(g.in_nodes_list(3), [4,1,2])
+
+        g = Graph()
+        g.connect(1, 3)
+        g.connect(2, 3)
+        g.connect(4, 3)
+        self.assertListEqual(g.in_nodes_list(3), [1,2,4])
+
+        g = Graph()
+        g.connect(1, 3)
+        g.connect(2, 3)
+        g.connect(4, 3)
+
+        g.connect(3, 13)
+        g.connect(3, 11)
+        g.connect(3, 12)
+        self.assertListEqual(g.in_nodes_list(3), [1, 2, 4])
+        self.assertListEqual(g.out_nodes_list(3), [13, 11, 12])
+
+        print("Preserve order passed")
+
 
 if __name__ == 'main':
     unittest.main()

@@ -20,7 +20,13 @@ class Graph:
         transposed_g._attribute = copy.deepcopy(self._attribute)
         return transposed_g
 
-    def sub_graph(self, vertexes) -> 'Graph':
+    def sub_graph(self, vertexes, copy_attribute=False) -> 'Graph':
+        """ Create a sub-graph with specified vertices
+
+        :param vertexes: The vertexes of the sub graph
+        :param copy_attribute: will deep copy the graph's attribute if True
+        :return:
+        """
         sub_g = Graph()
         sub_vertex = set(vertexes)
         for v in sub_vertex:
@@ -40,6 +46,16 @@ class Graph:
 
     def out_nodes(self, node_id: int) -> set:
         return self._connect[node_id]
+
+    """
+    Those are significant for some graph like computational
+    graph because the order of the inputs or outputs is important!
+    """
+    def in_nodes_list(self, node_id: int) -> list:
+        return list(self._connect_inv_ordered[node_id])
+
+    def out_nodes_list(self, node_id: int) -> list:
+        return list(self._connect_ordered[node_id])
 
     def num_nodes(self):
         return len(self._V)
