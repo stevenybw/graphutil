@@ -49,6 +49,9 @@ class Graph:
     def nodes(self) -> set:
         return set(self._V)
 
+    def edges(self) -> list:
+        return list(self._edges)
+
     def in_nodes(self, node_id: int) -> list:
         return [e.src for e in self._edges_to_node_id[node_id]]
 
@@ -165,13 +168,17 @@ class Graph:
 
         return scc_list
 
-    def write_to_dot(self, path, index_name_map=None):
+    def write_to_dot(self, path, node_label=None, edge_label=None):
         with open(path, "w") as fp:
           fp.write("digraph{\n")
-          if index_name_map:
+          if node_label:
               for v in self._V:
-                  fp.write("%d [label=\"%s\"]\n" % (v, index_name_map(v)))
-          for v in self._V:
-              for src in self.in_nodes(v):
-                  fp.write("%d -> %d\n" % (src, v))
+                  fp.write("%d [label=\"%s\"]\n" % (v, node_label(v)))
+          for edge in self.edges():
+              src = edge.src
+              dst = edge.dst
+              if edge_label:
+                  fp.write("%d -> %d [label=\"%s\"]\n" % (src, dst, edge_label(edge)))
+              else:
+                  fp.write("%d -> %d\n" % (src, dst))
           fp.write("}\n")
