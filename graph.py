@@ -56,10 +56,10 @@ class Graph:
         return [e.dst for e in self._edges_from_node_id[node_id]]
 
     def in_edges(self, node_id: int) -> list:
-        return list(self._edges_to_node_id)
+        return list(self._edges_to_node_id[node_id])
 
     def out_edges(self, node_id: int) -> list:
-        return list(self._edges_from_node_id)
+        return list(self._edges_from_node_id[node_id])
 
     def num_nodes(self):
         return len(self._V)

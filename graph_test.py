@@ -12,6 +12,16 @@ class TestGraph(unittest.TestCase):
 
         self.assertSetEqual(set(g.out_nodes(1)), {2,3,4,5})
         self.assertSetEqual(set(g.out_nodes(2)), {6})
+        self.assertEqual([e.dst for e in g.out_edges(1)], [2, 3, 4, 5])
+        self.assertEqual([e.src for e in g.out_edges(1)], [1, 1, 1, 1])
+        self.assertEqual([e.dst for e in g.in_edges(1)], [])
+        self.assertEqual([e.src for e in g.in_edges(1)], [])
+
+        self.assertEqual([e.dst for e in g.out_edges(2)], [6])
+        self.assertEqual([e.src for e in g.out_edges(2)], [2])
+        self.assertEqual([e.dst for e in g.in_edges(2)], [2])
+        self.assertEqual([e.src for e in g.in_edges(2)], [1])
+
         for i in range(3,7):
             self.assertSetEqual(set(g.out_nodes(i)), set())
         self.assertEqual(g.num_nodes(), 6)
