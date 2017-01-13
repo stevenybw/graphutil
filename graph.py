@@ -1,61 +1,65 @@
 import copy
 """ Graph For Python"""
+
+
+class Edge:
+    def __init__(self, src, dst, src_output, dst_input, tensor_shape, dtype):
+        self.src = src
+        self.dst = dst
+        self.src_output = src_output
+        self.dst_input = dst_input
+        self.tensor_shape = tensor_shape
+        self.dtype = dtype
+
+
 class Graph:
     def __init__(self):
         self._V = set()
-        self._connect = dict()
-        self._connect_inv = dict()
 
-        # Add order is preserved
-        self._connect_ordered = dict()
-        self._connect_inv_ordered = dict()
+        self._edges = list()
+        self._edges_from_node_id = dict()
+        self._edges_to_node_id = dict()
         
         self._attribute = dict()
 
     def transpose(self) -> 'Graph':
         transposed_g = Graph()
-        for v in self._V:
-            for u in self.in_nodes(v):
-                transposed_g.connect(v, u)
-        transposed_g._attribute = copy.deepcopy(self._attribute)
+        for e in self._edges:
+            transposed_g.connect(e.src, e.dst, src_output_index=e.src_output, dst_input_index=e.dst_input)
         return transposed_g
 
-    def sub_graph(self, vertexes, copy_attribute=False) -> 'Graph':
+    def sub_graph(self, vertexes) -> 'Graph':
         """ Create a sub-graph with specified vertices
 
         :param vertexes: The vertexes of the sub graph
-        :param copy_attribute: will deep copy the graph's attribute if True
         :return:
         """
-        sub_g = Graph()
+        sub_graph = Graph()
         sub_vertex = set(vertexes)
         for v in sub_vertex:
             if v not in self._V:
                 raise RuntimeError("vertex " + str(v) + " does not exist in the graph")
-            for u in self.in_nodes(v):
-                if u in sub_vertex:
-                    sub_g.connect(u, v)
-            sub_g._attribute[v] = copy.deepcopy(self._attribute[v])
-        return sub_g
+            else:
+                sub_graph.possibly_add_node(v)
+        for e in self._edges:
+            if e.src in sub_vertex and e.dst in sub_vertex:
+                sub_graph.connect(e.src, e.dst, src_output_index=e.src_output, dst_input_index=e.dst_input)
+        return sub_graph
 
     def nodes(self) -> set:
         return set(self._V)
 
-    def in_nodes(self, node_id: int) -> set:
-        return self._connect_inv[node_id]
+    def in_nodes(self, node_id: int) -> list:
+        return [e.src for e in self._edges_to_node_id[node_id]]
 
-    def out_nodes(self, node_id: int) -> set:
-        return self._connect[node_id]
+    def out_nodes(self, node_id: int) -> list:
+        return [e.dst for e in self._edges_from_node_id[node_id]]
 
-    """
-    Those are significant for some graph like computational
-    graph because the order of the inputs or outputs is important!
-    """
-    def in_nodes_list(self, node_id: int) -> list:
-        return list(self._connect_inv_ordered[node_id])
+    def in_edges(self, node_id: int) -> list:
+        return list(self._edges_to_node_id)
 
-    def out_nodes_list(self, node_id: int) -> list:
-        return list(self._connect_ordered[node_id])
+    def out_edges(self, node_id: int) -> list:
+        return list(self._edges_from_node_id)
 
     def num_nodes(self):
         return len(self._V)
@@ -63,45 +67,20 @@ class Graph:
     def possibly_add_node(self, u):
         if u not in self._V:
             self._V.add(u)
-            self._connect[u] = set()
-            self._connect_inv[u] = set()
-            self._connect_ordered[u] = list()
-            self._connect_inv_ordered[u] = list()
+            self._edges_from_node_id[u] = list()
+            self._edges_to_node_id[u] = list()
             val = dict()
             val['in_degree'] = 0
             val['out_degree'] = 0
             self._attribute[u] = val
 
-    def delete(self, node_id):
-        assert(node_id in self._V)
-        dependencies = self.in_nodes(node_id)
-        succeeding = self.out_nodes(node_id)
-
-        for u in dependencies:
-            assert node_id in self.out_nodes(u)
-            self.out_nodes(u).remove(node_id)
-
-        for v in succeeding:
-            assert node_id in self.in_nodes(v)
-            self.in_nodes(v).remove(node_id)
-
-        del self._connect[node_id]
-        del self._connect_inv[node_id]
-        del self._connect_ordered[node_id]
-        del self._connect_inv_ordered[node_id]
-        del self._attribute[node_id]
-        self._V.remove(node_id)
-
-    def connect(self, u, v):
-        self.possibly_add_node(u)
-        self.possibly_add_node(v)
-        if v not in self._connect[u]:
-            self._connect[u].add(v)
-            self._connect_inv[v].add(u)
-            self._connect_ordered[u].append(v)
-            self._connect_inv_ordered[v].append(u)
-            self._attribute[u]['out_degree'] += 1
-            self._attribute[v]['in_degree'] += 1
+    def connect(self, src, dst, src_output_index=0, dst_input_index=0, tensor_shape=None, dtype=None):
+        self.possibly_add_node(src)
+        self.possibly_add_node(dst)
+        edge = Edge(src, dst, src_output_index, dst_input_index, tensor_shape, dtype)
+        self._edges_from_node_id[src].append(edge)
+        self._edges_to_node_id[dst].append(edge)
+        self._edges.append(edge)
 
     def set_attribute(self, node_id, name, value):
         self.possibly_add_node(node_id)

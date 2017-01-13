@@ -1,7 +1,6 @@
 import unittest
 from graph import Graph
 
-
 class TestGraph(unittest.TestCase):
     def test_basic(self):
         g = Graph()
@@ -11,10 +10,10 @@ class TestGraph(unittest.TestCase):
         g.connect(1, 5)
         g.connect(2, 6)
 
-        self.assertSetEqual(g.out_nodes(1), {2,3,4,5})
-        self.assertSetEqual(g.out_nodes(2), {6})
+        self.assertSetEqual(set(g.out_nodes(1)), {2,3,4,5})
+        self.assertSetEqual(set(g.out_nodes(2)), {6})
         for i in range(3,7):
-            self.assertSetEqual(g.out_nodes(i), set())
+            self.assertSetEqual(set(g.out_nodes(i)), set())
         self.assertEqual(g.num_nodes(), 6)
 
     def test_cyclic(self):
@@ -119,13 +118,13 @@ class TestGraph(unittest.TestCase):
         g.connect(4, 3)
         g.connect(1, 3)
         g.connect(2, 3)
-        self.assertListEqual(g.in_nodes_list(3), [4,1,2])
+        self.assertListEqual(g.in_nodes(3), [4,1,2])
 
         g = Graph()
         g.connect(1, 3)
         g.connect(2, 3)
         g.connect(4, 3)
-        self.assertListEqual(g.in_nodes_list(3), [1,2,4])
+        self.assertListEqual(g.in_nodes(3), [1,2,4])
 
         g = Graph()
         g.connect(1, 3)
@@ -135,8 +134,8 @@ class TestGraph(unittest.TestCase):
         g.connect(3, 13)
         g.connect(3, 11)
         g.connect(3, 12)
-        self.assertListEqual(g.in_nodes_list(3), [1, 2, 4])
-        self.assertListEqual(g.out_nodes_list(3), [13, 11, 12])
+        self.assertListEqual(g.in_nodes(3), [1, 2, 4])
+        self.assertListEqual(g.out_nodes(3), [13, 11, 12])
 
         print("Preserve order passed")
 
